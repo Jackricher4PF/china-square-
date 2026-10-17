@@ -20,5 +20,41 @@ try {
 }
 
 // Paystack API Keys
-define('PAYSTACK_SECRET_KEY', 'sk_test_your_paystack_secret_key');
-define('PAYSTACK_PUBLIC_KEY', 'pk_test_your_paystack_public_key');
+// Robust .env loader - won't break site
+function loadEnvOnce() {
+    if (isset($_ENV['PAYSTACK_SECRET_KEY'])) return;
+    
+    $possiblePaths = [
+        __DIR__ . '/../.env',
+        __DIR__ . '/../../.env',
+        __DIR__ . '/../.env.example',
+    ];
+    
+    foreach ($possiblePaths as $path) {
+        if (!file_exists($path)) continue;
+        $lines = file($path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+        foreach ($lines as $line) {
+            $line = trim($line);
+            if ($line === '' || $line[0] === '#') continue;
+            if (!str_contains($line, '=')) continue;
+            list($k, $v) = explode('=', $line, 2);
+            $k = trim($k); $v = trim($v, " \t\n\r\0\x0B\"'");
+            if ($k === '') continue;
+            $_ENV[$k] = $v;
+            putenv("$k=$v");
+        }
+        break; // stop after first file found
+    }
+}
+loadEnvOnce();
+
+// This is what fixes the Warning - use getenv as fallback
+$secret = $_ENV['PAYSTACK_SECRET_KEY'] ?? getenv('PAYSTACK_SECRET_KEY') ?? '';
+$public = $_ENV['PAYSTACK_PUBLIC_KEY'] ?? getenv('PAYSTACK_PUBLIC_KEY') ?? '';
+
+if ($secret !== '') {
+    define('PAYSTACK_SECRET_KEY', $secret);
+}
+if ($public !== '') {
+    define('PAYSTACK_PUBLIC_KEY', $public);
+}

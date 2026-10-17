@@ -8,6 +8,7 @@ require_once '../config/db.php';
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>China Square | Modern Clothing Store</title>
+  <link rel="stylesheet" href="css/index.css">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://js.paystack.co/v1/inline.js"></script>
 </head>
@@ -37,6 +38,11 @@ require_once '../config/db.php';
 
   <main class="container mx-auto p-6 flex-grow">
     <h2 class="text-2xl font-bold mb-6 border-b pb-2">Latest Clothing Collection</h2>
+    <div id="imageLightbox" class="image-lightbox">
+    <button class="close-lightbox"
+            aria-label="Close image viewer">&amp;times;</button>
+    <img id="lightboxImage" src="" alt="Full product image">
+</div>
     <div id="productsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
   </main>
 

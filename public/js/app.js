@@ -1,6 +1,10 @@
-let cart = [];
+let cart = JSON.parse(localStorage.getItem("chinaSquareCart")) || [];
 
+function saveCart() {
+    localStorage.setItem("chinaSquareCart", JSON.stringify(cart));
+}
 document.addEventListener('DOMContentLoaded', () => {
+  updateCartUI();
   fetchProducts();
 });
 
@@ -37,7 +41,7 @@ async function fetchProducts(search = '') {
 
           <div class="mt-4 flex justify-between items-center border-t pt-3">
             <span class="font-black text-xl text-red-600">$${parseFloat(p.price).toFixed(2)}</span>
-            <button onclick="addToCart(${p.id}, '${p.title}', ${p.price})" class="bg-black text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-gray-800">Add to Cart</button>
+            <button onclick="handleAddToCart(${p.id}, '${p.title.replace(/'/g, "\\'")}', ${p.price})" class="bg-black text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-gray-800">Add to Cart</button>
           </div>
         </div>
       </div>
@@ -63,6 +67,7 @@ function addToCart(id, title, price) {
   } else {
     cart.push({ key: itemKey, id, title, size: selectedSize, price: parseFloat(price), quantity: 1 });
   }
+  saveCart();
   updateCartUI();
 }
 
@@ -88,8 +93,9 @@ function updateCartUI() {
 }
 
 function removeFromCart(index) {
-  cart.splice(index, 1);
-  updateCartUI();
+    cart.splice(index, 1);
+    saveCart();
+    updateCartUI();
 }
 
 function toggleCartModal() {
@@ -137,9 +143,104 @@ async function verifyPaymentOnBackend(reference, totalAmount) {
   if (data.success) {
     alert('Payment successful! Your order has been placed.');
     cart = [];
+    saveCart();
     updateCartUI();
     toggleCartModal();
   } else {
     alert('Payment verification failed: ' + data.message);
   }
 }
+
+const imageLightbox = document.getElementById('imageLightbox');
+const lightboxImage = document.getElementById('lightboxImage');
+const productsGrid = document.getElementById('productsGrid');
+
+productsGrid.addEventListener('click', function (event) {
+    const img = event.target.closest('img');
+
+    if (!img || !productsGrid.contains(img)) return;
+
+    lightboxImage.src = img.src;
+    lightboxImage.alt = img.alt || 'Full product image';
+
+    imageLightbox.classList.add('active');
+    document.body.style.overflow = 'hidden';
+});
+
+function closeLightbox() {
+    imageLightbox.classList.remove('active');
+    lightboxImage.src = '';
+    document.body.style.overflow = '';
+}
+
+imageLightbox.querySelector('.close-lightbox')
+    .addEventListener('click', closeLightbox);
+
+imageLightbox.addEventListener('click', function (event) {
+    if (event.target === imageLightbox) {
+        closeLightbox();
+    }
+});
+
+document.addEventListener('keydown', function (event) {
+    if (event.key === 'Escape') {
+        closeLightbox();
+    }
+});
+
+
+
+const originalAddToCart = addToCart;
+
+function showCartToast(message, type = "success") {
+    let toast = document.getElementById("cartToast");
+
+    if (!toast) {
+        toast = document.createElement("div");
+        toast.id = "cartToast";
+        document.body.appendChild(toast);
+    }
+
+    toast.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 999999;
+        padding: 14px 22px;
+        max-width: calc(100vw - 40px);
+        color: white;
+        background: ${type === "success" ? "#16a34a" : "#dc2626"};
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 600;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+        opacity: 0;
+        transform: translateX(120%);
+        transition: all 0.3s ease;
+    `;
+
+    toast.textContent = message;
+
+    requestAnimationFrame(() => {
+        toast.style.opacity = "1";
+        toast.style.transform = "translateX(0)";
+    });
+
+    clearTimeout(window.cartToastTimer);
+
+    window.cartToastTimer = setTimeout(() => {
+        toast.style.opacity = "0";
+        toast.style.transform = "translateX(120%)";
+    }, 3000);
+}
+
+addToCart = function(id, title, price) {
+    try {
+        originalAddToCart(id, title, price);
+        showCartToast("✓ " + title + " added to cart successfully!");
+    } catch (error) {
+        console.error(error);
+        showCartToast("✗ Failed to add " + title + " to cart.", "error");
+    }
+};
+

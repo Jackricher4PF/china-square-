@@ -1,0 +1,86 @@
+/* Clickable product images */
+#productsGrid > div > img {
+    cursor: zoom-in;
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+}
+
+/* Full-screen image viewer */
+.image-lightbox {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    background: rgba(0, 0, 0, 0.92);
+    align-items: center;
+    justify-content: center;
+    padding: 15px;
+}
+
+.image-lightbox.active {
+    display: flex;
+}
+
+.image-lightbox img {
+    max-width: 100%;
+    max-height: 90vh;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+}
+
+.image-lightbox .close-lightbox {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    color: white;
+    background: transparent;
+    border: none;
+    font-size: 36px;
+    cursor: pointer;
+}
+/* Prevent horizontal scrolling */
+html,
+body {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+    overflow-x: clip;
+    box-sizing: border-box;
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+/* Make navigation fit the screen */
+body > nav {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+/* Keep navigation contents within the screen */
+body > nav * {
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+/* Adjust navigation on mobile */
+@media (max-width: 768px) {
+    body > nav {
+        padding: 10px 12px;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    body > nav img {
+        max-width: 100%;
+        height: auto;
+    }
+}
